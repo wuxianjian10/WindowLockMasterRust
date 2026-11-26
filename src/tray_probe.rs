@@ -14,6 +14,6 @@ fn main(){
  drop(tray);
  let live=unsafe{FindWindowW(w!("WindowLockMasterTray"),None)};
  let mut pid=0; if let Ok(other)=live {unsafe{windows::Win32::UI::WindowsAndMessaging::GetWindowThreadProcessId(other,Some(&mut pid));}}
- assert!(live.is_err() || pid!=GetCurrentProcessId(),"only this probe's HWND must be destroyed");
+ assert!(live.is_err() || pid!=unsafe{GetCurrentProcessId()},"only this probe's HWND must be destroyed");
  println!("PASS: native tray double-click message -> Open; Exit -> thread joined and HWND destroyed (synthetic message test, not physical mouse)");
 }

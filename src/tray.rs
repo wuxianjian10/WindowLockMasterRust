@@ -120,7 +120,8 @@ pub fn start(main_window: Option<HWND>) -> TrayHandle {
         .expect("failed to start tray thread");
 
     let shutdown = ready_rx.recv().ok().flatten();
-    TrayHandle { rx: action_rx, shutdown, hwnd: shutdown, owner_pid: GetCurrentProcessId(), thread: Some(thread) }
+    let owner_pid = unsafe { GetCurrentProcessId() };
+    TrayHandle { rx: action_rx, shutdown, hwnd: shutdown, owner_pid, thread: Some(thread) }
 }
 
 struct TrayState {
