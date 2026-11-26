@@ -1,0 +1,50 @@
+name: Rust WinUI release
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  test-and-build:
+    runs-on: windows-2025
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install stable Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run regression tests
+        run: cargo test --locked --lib
+
+      - name: Build self-contained WinUI manager
+        run: cargo build --locked --release --features portable --bin WindowLockMasterRust --bin WindowLockMasterTrayProbe --bin WindowLockMasterOwnedMoveTest
+
+      - name: Assemble portable directory and ZIP
+        shell: pwsh
+        run: |
+          python scripts/package-manager.py --skip-smoke
+          $manifest = Get-Content artifacts/latest-package.json -Raw | ConvertFrom-Json
+          $zip = Get-Item $manifest.zip
+          if (-not $zip -or $zip.Length -le 0) { throw 'Portable ZIP missing or empty' }
+          $hash = (Get-FileHash $zip.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          Set-Content -LiteralPath ($zip.FullName + '.sha256') -Value "$hash  $($zip.Name)" -Encoding ascii
+          "PACKAGE_ZIP=$($zip.FullName)" >> $env:GITHUB_ENV
+          "PACKAGE_SHA256=$hash" >> $env:GITHUB_ENV
+          "PACKAGE_NAME=$($zip.Name)" >> $env:GITHUB_ENV
+
+      - name: Publish versioned release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            ${{ env.PACKAGE_ZIP }}
+            ${{ env.PACKAGE_ZIP }}.sha256

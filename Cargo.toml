@@ -1,0 +1,36 @@
+[package]
+name = "window-lock-master-rust"
+version = "2.0.2"
+edition = "2021"
+
+[features]
+portable = ["naui-windows/self-contained", "naui-winui3/self-contained"]
+
+[dependencies]
+naui-windows = { git = "https://github.com/mokuichi147/naui.git", rev = "f4d0e34b9b37bf6a0a047689f40eb782026c05ed" }
+naui-core = { git = "https://github.com/mokuichi147/naui.git", rev = "f4d0e34b9b37bf6a0a047689f40eb782026c05ed" }
+naui-winui3 = { git = "https://github.com/mokuichi147/naui.git", rev = "f4d0e34b9b37bf6a0a047689f40eb782026c05ed" }
+windows-core = "0.62"
+windows = { version = "0.62", features = ["Foundation", "Win32_Foundation", "Win32_System_LibraryLoader", "Win32_System_Threading", "Win32_UI_WindowsAndMessaging", "Win32_Graphics_Gdi", "Win32_Graphics_Dwm", "Win32_UI_HiDpi", "Win32_UI_Accessibility", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell", "Win32_Storage_FileSystem", "Win32_System_ProcessStatus", "Win32_Security"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[[bin]]
+name = "WindowLockMasterRust"
+path = "src/main.rs"
+
+[[bin]]
+name = "WindowLockMasterRustProbe"
+path = "src/probe.rs"
+
+[[bin]]
+name = "WindowLockMasterTrayProbe"
+path = "src/tray_probe.rs"
+
+[[bin]]
+name = "WindowLockMasterOwnedMoveTest"
+path = "src/owned_move_test.rs"
+
+[profile.release]
+opt-level = 2
+strip = true
